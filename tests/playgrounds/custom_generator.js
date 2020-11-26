@@ -50,3 +50,63 @@ Blockly.defineBlocksWithJsonArray([{
   `
 
   const codelabGenerator = new Blockly.Generator('JSON');
+  codelabGenerator.PRECEDENCE = 0;
+
+  codelabGenerator['logic_null'] = function(block) {
+    return ['null', codelabGenerator.PRECEDENCE];
+  };
+
+  codelabGenerator['text'] = function(block) {
+    var textValue = block.getFieldValue('TEXT');
+    var code = '"' + textValue + '"';
+    return [code, codelabGenerator.PRECEDENCE];
+  };
+
+  codelabGenerator['math_number'] = function(block) {
+    const code = Number(block.getFieldValue('NUM'));
+    return [code, codelabGenerator.PRECEDENCE];
+  };
+
+  codelabGenerator['logic_boolean'] = function(block) {
+    const code = (block.getFieldValue('BOOL') == 'TRUE') ? 'true' : 'false';
+    return [code, codelabGenerator.PRECEDENCE];
+  };
+
+  codelabGenerator['member'] = function(block) {
+    const name = block.getFieldValue('MEMBER_NAME');
+    const value = codelabGenerator.valueToCode(block, 'MEMBER_VALUE',
+        codelabGenerator.PRECEDENCE);
+    const code = '"' + name + '": ' + value + ',\n';
+    return code;
+  };
+
+  codelabGenerator['lists_create_with'] = function(block) {
+    const values = [];
+    for (var i = 0; i < block.itemCount_; i++) {
+      let valueCode = codelabGenerator.valueToCode(block, 'ADD' + i,
+          codelabGenerator.PRECEDENCE);
+      if (valueCode) {
+        values.push(valueCode);
+      }
+    }
+    const valueString = values.join(',\n');
+    const indentedValueString =
+        codelabGenerator.prefixLines(valueString, codelabGenerator.INDENT);
+    const codeString = '[\n' + indentedValueString + '\n]';
+    return [codeString, codelabGenerator.PRECEDENCE];
+  };
+
+  codelabGenerator['object'] = function(block) {
+    const statement_members =
+        codelabGenerator.statementToCode(block, 'MEMBERS');
+    const code = '{\n' + statement_members + '}';
+    return [code, codelabGenerator.PRECEDENCE];
+  };
+
+  codelabGenerator.scrub_ = function(block, code, opt_thisOnly) {
+    const nextBlock =
+        block.nextConnection && block.nextConnection.targetBlock();
+    const nextCode =
+        opt_thisOnly ? '' : codelabGenerator.blockToCode(nextBlock);
+    return code +  nextCode;
+  };
