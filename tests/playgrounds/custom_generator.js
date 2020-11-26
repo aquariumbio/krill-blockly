@@ -49,3 +49,4 @@ Blockly.defineBlocksWithJsonArray([{
   </xml>
   `
 
+  const codelabGenerator = new Blockly.Generator('JSON');
