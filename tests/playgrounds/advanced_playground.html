@@ -68,7 +68,7 @@
 <script src="./screenshot.js"></script>
 <script src="https://unpkg.com/@blockly/dev-tools@2.0.0/dist/index.js"></script>
 <script src="https://unpkg.com/@blockly/theme-modern/dist/index.js"></script>
-<script src="custom_generator.js"></script>
+<script src="krill_generator.js"></script>
 
 <script>
 // Custom requires for the playground.
@@ -111,7 +111,7 @@ function configurePlayground(playground) {
       // Refresh theme.
       ws.setTheme(ws.getTheme());
     });
-    playground.addGenerator('Codelab', codelabGenerator);
+    playground.addGenerator('Krill', krillGenerator);
 }
 
 function initPlayground() {
@@ -139,7 +139,7 @@ function initPlayground() {
           drag: true,
           wheel: false,
         },
-        toolbox: codelabToolbox,
+        toolbox: krillToolbox,
         toolboxPosition: 'start',
         renderer: 'geras',
         zoom:
