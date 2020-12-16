@@ -39,6 +39,14 @@ Blockly.defineBlocksWithJsonArray([
           [
             "microtiter plates",
             "MicrotiterPlates"
+          ],
+          [
+            "pipettors",
+            "Pipettors"
+          ],
+          [
+            "labware names",
+            "LabwareNames"
           ]
         ]
       }
@@ -47,6 +55,28 @@ Blockly.defineBlocksWithJsonArray([
     "nextStatement": null,
     "colour": 230,
     "tooltip": "Select a library to import",
+    "helpUrl": "https://www.aquarium.bio/"
+  },
+  {
+    "type": "operations",
+    "message0": "operations",
+    "output": null,
+    "colour": 230,
+    "tooltip": "The list of operations originally planned",
+    "helpUrl": "https://www.aquarium.bio/"
+  },{
+    "type": "operations_retrieve",
+    "message0": "retrieve %1",
+    "args0": [
+      {
+        "type": "input_value",
+        "name": "OPERATIONS"
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 230,
+    "tooltip": "Gather materials for operations",
     "helpUrl": "https://www.aquarium.bio/"
   },{
     "type": "operations_make",
@@ -83,9 +113,10 @@ Blockly.defineBlocksWithJsonArray([
   <xml id="toolbox" style="display: none">
   <block type="protocol"/>
   <block type="library"></block>
+  <block type="operations_retrieve"/>
   <block type="operations_make"/>
   <block type="operation_list"/>
-  <block type="text"><field name="TEXT"/></block>
+  <block type="operations"/>
   </xml>
   `
 
@@ -93,41 +124,51 @@ Blockly.defineBlocksWithJsonArray([
   krillGenerator.PRECEDENCE = 0;
 
   krillGenerator['protocol'] = function(block) {
-    var imports = krillGenerator.statementToCode(block, 'IMPORT');
-    var main = krillGenerator.statementToCode(block, 'MAIN');
-    var code = '# typed: false\n# frozen_string_literal: true\n\nclass Protocol\n';
-    code += imports;
-    code += 'def main\n' + main + 'end\n';
+    let code = '# typed: false\n# frozen_string_literal: true\n\nclass Protocol\n';
+    let imports = krillGenerator.statementToCode(block, 'IMPORT');
+    code += imports + '\n';
+
+    let main = krillGenerator.statementToCode(block, 'MAIN');
+    main = 'def main\n' + main + 'end\n';
+    let indentedMain = krillGenerator.prefixLines(main, krillGenerator.INDENT);
+
+    code += indentedMain;
     code += 'end';
     return [code, krillGenerator.PRECEDENCE];
   };
 
   krillGenerator['library'] = function(block) {
-    const name = block.getFieldValue('LIBRARY_NAME');
-    const code = 'include ' + name + '\n';
+    let name = block.getFieldValue('LIBRARY_NAME');
+    let code = 'include ' + name + '\n';
+    return code;
+  };
+
+  krillGenerator['operations_retrieve'] = function(block) {
+    let operation_list = krillGenerator.valueToCode(block, 'OPERATIONS', krillGenerator.PRECEDENCE);
+    let code = operation_list + '.retrieve\n';
     return code;
   };
 
   krillGenerator['operations_make'] = function(block) {
-    const operation_list = krillGenerator.valueToCode(block, 'OPERATIONS', krillGenerator.PRECEDENCE);
-    const code = operation_list + '.make\n';
+    let operation_list = krillGenerator.valueToCode(block, 'OPERATIONS', krillGenerator.PRECEDENCE);
+    let code = operation_list + '.make\n';
     return code;
   };
 
   krillGenerator['operation_list'] = function(block) {
-    var code = block.getFieldValue('OPERATION_LIST');
+    let code = block.getFieldValue('OPERATION_LIST');
     return [code, krillGenerator.PRECEDENCE];
   };
 
-  krillGenerator['text'] = function(block) {
-    var code = block.getFieldValue('TEXT');
+  krillGenerator['operations'] = function(block) {
+    let code = 'operations';
     return [code, krillGenerator.PRECEDENCE];
   };
 
   krillGenerator.scrub_ = function(block, code, opt_thisOnly) {
-    const nextBlock =
+    let nextBlock =
         block.nextConnection && block.nextConnection.targetBlock();
-    const nextCode =
+    let nextCode =
         opt_thisOnly ? '' : krillGenerator.blockToCode(nextBlock);
     return code +  nextCode;
   };
