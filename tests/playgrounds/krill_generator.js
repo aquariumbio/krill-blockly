@@ -1,12 +1,16 @@
-// '%{BKY_LOGIC_HUE}'
-// '%{BKY_LOOPS_HUE}'
-// '%{BKY_MATH_HUE}'
-// '%{BKY_TEXTS_HUE}'
-// '%{BKY_LISTS_HUE}'
-// '%{BKY_COLOUR_HUE}'
-// '%{BKY_VARIABLES_HUE}'
-// '%{BKY_VARIABLES_DYNAMIC_HUE}'
-// '%{BKY_PROCEDURES_HUE}'
+const krillGenerator = new Blockly.Generator('Krill');
+krillGenerator.PRECEDENCE = 0;
+
+krillGenerator.scrub_ = function(block, code, opt_thisOnly) {
+  let nextBlock =
+      block.nextConnection && block.nextConnection.targetBlock();
+  let nextCode =
+      opt_thisOnly ? '' : krillGenerator.blockToCode(nextBlock);
+  return code +  nextCode;
+};
+
+////////// Protocol //////////
+Blockly.Msg.PROTOCOL_HUE = '%{BKY_VARIABLES_DYNAMIC_HUE}';
 
 Blockly.defineBlocksWithJsonArray([
   {
@@ -22,10 +26,31 @@ Blockly.defineBlocksWithJsonArray([
       }
     ],
     "output": null,
-    "colour": "%{BKY_VARIABLES_DYNAMIC_HUE}",
+    "colour": "%{BKY_PROTOCOL_HUE}",
     "tooltip": "This defines a protocol",
     "helpUrl": "https://www.aquarium.bio/",
-  },
+  }
+]);
+
+krillGenerator['protocol'] = function(block) {
+  let code = ''
+  code += '# typed: false\n# frozen_string_literal: true\n\n'
+  code += 'needs \'Protocol Base/ProtocolBase\'\n\n'
+  code += 'class Protocol\n' + krillGenerator.INDENT + 'include ProtocolBase\n\n';
+
+  let main = krillGenerator.statementToCode(block, 'MAIN');
+  main = 'def main\n' + main + 'end\n';
+  let indentedMain = krillGenerator.prefixLines(main, krillGenerator.INDENT);
+  code += indentedMain;
+
+  code += 'end\n';
+  return [code, krillGenerator.PRECEDENCE];
+};
+
+////////// Operations //////////
+Blockly.Msg.OPERATION_HUE = '%{BKY_MATH_HUE}';
+
+Blockly.defineBlocksWithJsonArray([
   {
     "type": "operations",
     "message0": "operations",
@@ -75,7 +100,34 @@ Blockly.defineBlocksWithJsonArray([
     "colour": "%{BKY_MATH_HUE}",
     "tooltip": "",
     "helpUrl": ""
-  },{
+  }
+]);
+
+krillGenerator['operations_retrieve'] = function(block) {
+  let operation_list = krillGenerator.valueToCode(block, 'OPERATIONS', krillGenerator.PRECEDENCE);
+  let code = operation_list + '.retrieve\n';
+  return code;
+};
+
+krillGenerator['operations_make'] = function(block) {
+  let operation_list = krillGenerator.valueToCode(block, 'OPERATIONS', krillGenerator.PRECEDENCE);
+  let code = operation_list + '.make\n';
+  return code;
+};
+
+krillGenerator['operation_list'] = function(block) {
+  let code = block.getFieldValue('OPERATION_LIST');
+  return [code, krillGenerator.PRECEDENCE];
+};
+
+krillGenerator['operations'] = function(block) {
+  let code = 'operations';
+  return [code, krillGenerator.PRECEDENCE];
+};
+
+////////// Operation For Loop //////////
+Blockly.defineBlocksWithJsonArray([
+  {
     "type": "for_each_operation",
     "message0": "for each  %1 in %2 %3",
     "args0": [
@@ -103,6 +155,18 @@ Blockly.defineBlocksWithJsonArray([
   }
 ]);
 
+krillGenerator['for_each_operation'] = function(block) {
+  // TODO: Figure out how to replace with safe variable name.
+  let variable_operation = block.getFieldValue('OPERATION');
+  let value_operation_list = krillGenerator.valueToCode(block, 'OPERATION_LIST', krillGenerator.PRECEDENCE);
+  let statements_block = krillGenerator.statementToCode(block, 'BLOCK');
+  let code = '\n' + value_operation_list + '.each do |' + variable_operation + '|\n';
+  code += statements_block;
+  code += 'end\n\n';
+  return code;
+};
+
+////////// Toolbox //////////
 class CustomCategory extends Blockly.ToolboxCategory {
   /**
    * Constructor for a custom category.
@@ -120,7 +184,7 @@ Blockly.registry.register(
 
 var krillToolbox = `
 <xml id="toolbox" style="display: none">
-<category name="Protocol" colour="%{BKY_VARIABLES_DYNAMIC_HUE}">
+<category name="Protocol" colour="%{BKY_PROTOCOL_HUE}">
 <block type="protocol"/>
 </category>
 <category name="Operations" colour="%{BKY_MATH_HUE}">
@@ -134,62 +198,3 @@ var krillToolbox = `
 </category>
 </xml>
 `
-
-const krillGenerator = new Blockly.Generator('Krill');
-krillGenerator.PRECEDENCE = 0;
-
-krillGenerator['protocol'] = function(block) {
-  let code = ''
-  code += '# typed: false\n# frozen_string_literal: true\n\n'
-  code += 'needs \'Protocol Base/ProtocolBase\'\n\n'
-  code += 'class Protocol\n' + krillGenerator.INDENT + 'include ProtocolBase\n\n';
-
-  let main = krillGenerator.statementToCode(block, 'MAIN');
-  main = 'def main\n' + main + 'end\n';
-  let indentedMain = krillGenerator.prefixLines(main, krillGenerator.INDENT);
-  code += indentedMain;
-
-  code += 'end\n';
-  return [code, krillGenerator.PRECEDENCE];
-};
-
-krillGenerator['operations_retrieve'] = function(block) {
-  let operation_list = krillGenerator.valueToCode(block, 'OPERATIONS', krillGenerator.PRECEDENCE);
-  let code = operation_list + '.retrieve\n';
-  return code;
-};
-
-krillGenerator['operations_make'] = function(block) {
-  let operation_list = krillGenerator.valueToCode(block, 'OPERATIONS', krillGenerator.PRECEDENCE);
-  let code = operation_list + '.make\n';
-  return code;
-};
-
-krillGenerator['operation_list'] = function(block) {
-  let code = block.getFieldValue('OPERATION_LIST');
-  return [code, krillGenerator.PRECEDENCE];
-};
-
-krillGenerator['operations'] = function(block) {
-  let code = 'operations';
-  return [code, krillGenerator.PRECEDENCE];
-};
-
-krillGenerator['for_each_operation'] = function(block) {
-  // TODO: Figure out how to replace with safe variable name.
-  let variable_operation = block.getFieldValue('OPERATION');
-  let value_operation_list = krillGenerator.valueToCode(block, 'OPERATION_LIST', krillGenerator.PRECEDENCE);
-  let statements_block = krillGenerator.statementToCode(block, 'BLOCK');
-  let code = '\n' + value_operation_list + '.each do |' + variable_operation + '|\n';
-  code += statements_block;
-  code += 'end\n\n';
-  return code;
-};
-
-krillGenerator.scrub_ = function(block, code, opt_thisOnly) {
-  let nextBlock =
-      block.nextConnection && block.nextConnection.targetBlock();
-  let nextCode =
-      opt_thisOnly ? '' : krillGenerator.blockToCode(nextBlock);
-  return code +  nextCode;
-};
