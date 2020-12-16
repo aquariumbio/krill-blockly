@@ -1,3 +1,13 @@
+// '%{BKY_LOGIC_HUE}'
+// '%{BKY_LOOPS_HUE}'
+// '%{BKY_MATH_HUE}'
+// '%{BKY_TEXTS_HUE}'
+// '%{BKY_LISTS_HUE}'
+// '%{BKY_COLOUR_HUE}'
+// '%{BKY_VARIABLES_HUE}'
+// '%{BKY_VARIABLES_DYNAMIC_HUE}'
+// '%{BKY_PROCEDURES_HUE}'
+
 Blockly.defineBlocksWithJsonArray([
   {
     "type": "protocol",
@@ -12,7 +22,7 @@ Blockly.defineBlocksWithJsonArray([
       }
     ],
     "output": null,
-    "colour": 230,
+    "colour": "%{BKY_VARIABLES_DYNAMIC_HUE}",
     "tooltip": "This defines a protocol",
     "helpUrl": "https://www.aquarium.bio/",
   },
@@ -20,7 +30,7 @@ Blockly.defineBlocksWithJsonArray([
     "type": "operations",
     "message0": "operations",
     "output": null,
-    "colour": 230,
+    "colour": "%{BKY_MATH_HUE}",
     "tooltip": "The list of operations originally planned",
     "helpUrl": "https://www.aquarium.bio/"
   },{
@@ -34,7 +44,7 @@ Blockly.defineBlocksWithJsonArray([
     ],
     "previousStatement": null,
     "nextStatement": null,
-    "colour": 230,
+    "colour": "%{BKY_MATH_HUE}",
     "tooltip": "Gather materials for operations",
     "helpUrl": "https://www.aquarium.bio/"
   },{
@@ -48,7 +58,7 @@ Blockly.defineBlocksWithJsonArray([
     ],
     "previousStatement": null,
     "nextStatement": null,
-    "colour": 230,
+    "colour": "%{BKY_MATH_HUE}",
     "tooltip": "Gather materials for operations",
     "helpUrl": "https://www.aquarium.bio/"
   },{
@@ -62,7 +72,7 @@ Blockly.defineBlocksWithJsonArray([
       }
     ],
     "output": null,
-    "colour": 230,
+    "colour": "%{BKY_MATH_HUE}",
     "tooltip": "",
     "helpUrl": ""
   },{
@@ -87,20 +97,41 @@ Blockly.defineBlocksWithJsonArray([
     "inputsInline": false,
     "previousStatement": null,
     "nextStatement": null,
-    "colour": 230,
+    "colour": '%{BKY_LOOPS_HUE}',
     "tooltip": "loop over operations",
     "helpUrl": "https://www.aquarium.bio/"
   }
 ]);
 
+class CustomCategory extends Blockly.ToolboxCategory {
+  /**
+   * Constructor for a custom category.
+   * @override
+   */
+  constructor(categoryDef, toolbox, opt_parent) {
+    super(categoryDef, toolbox, opt_parent);
+  }
+}
+
+Blockly.registry.register(
+  Blockly.registry.Type.TOOLBOX_ITEM,
+  Blockly.ToolboxCategory.registrationName,
+  CustomCategory, true);
+
 var krillToolbox = `
 <xml id="toolbox" style="display: none">
+<category name="Protocol" colour="%{BKY_VARIABLES_DYNAMIC_HUE}">
 <block type="protocol"/>
+</category>
+<category name="Operations" colour="%{BKY_MATH_HUE}">
 <block type="operations_retrieve"/>
 <block type="operations_make"/>
 <block type="operation_list"/>
 <block type="operations"/>
+</category>
+<category name="Loops" colour="%{BKY_LOOPS_HUE}">
 <block type="for_each_operation"/>
+</category>
 </xml>
 `
 
@@ -145,10 +176,10 @@ krillGenerator['operations'] = function(block) {
 };
 
 krillGenerator['for_each_operation'] = function(block) {
+  // TODO: Figure out how to replace with safe variable name.
   let variable_operation = block.getFieldValue('OPERATION');
   let value_operation_list = krillGenerator.valueToCode(block, 'OPERATION_LIST', krillGenerator.PRECEDENCE);
   let statements_block = krillGenerator.statementToCode(block, 'BLOCK');
-  // TODO: Assemble Python into code variable.
   let code = '\n' + value_operation_list + '.each do |' + variable_operation + '|\n';
   code += statements_block;
   code += 'end\n\n';
