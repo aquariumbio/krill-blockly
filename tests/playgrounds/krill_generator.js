@@ -65,6 +65,31 @@ Blockly.defineBlocksWithJsonArray([
     "colour": 230,
     "tooltip": "",
     "helpUrl": ""
+  },{
+    "type": "for_each_operation",
+    "message0": "for each  %1 in %2 %3",
+    "args0": [
+      {
+        "type": "field_variable",
+        "name": "OPERATION",
+        "variable": "operation"
+      },
+      {
+        "type": "input_value",
+        "name": "OPERATION_LIST",
+        "check": "OperationList"
+      },
+      {
+        "type": "input_statement",
+        "name": "BLOCK"
+      }
+    ],
+    "inputsInline": false,
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 230,
+    "tooltip": "loop over operations",
+    "helpUrl": "https://www.aquarium.bio/"
   }
 ]);
 
@@ -75,6 +100,7 @@ var krillToolbox = `
 <block type="operations_make"/>
 <block type="operation_list"/>
 <block type="operations"/>
+<block type="for_each_operation"/>
 </xml>
 `
 
@@ -116,6 +142,17 @@ krillGenerator['operation_list'] = function(block) {
 krillGenerator['operations'] = function(block) {
   let code = 'operations';
   return [code, krillGenerator.PRECEDENCE];
+};
+
+krillGenerator['for_each_operation'] = function(block) {
+  let variable_operation = block.getFieldValue('OPERATION');
+  let value_operation_list = krillGenerator.valueToCode(block, 'OPERATION_LIST', krillGenerator.PRECEDENCE);
+  let statements_block = krillGenerator.statementToCode(block, 'BLOCK');
+  // TODO: Assemble Python into code variable.
+  let code = '\n' + value_operation_list + '.each do |' + variable_operation + '|\n';
+  code += statements_block;
+  code += 'end\n\n';
+  return code;
 };
 
 krillGenerator.scrub_ = function(block, code, opt_thisOnly) {
