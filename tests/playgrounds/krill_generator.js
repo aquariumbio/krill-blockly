@@ -1,14 +1,10 @@
 Blockly.defineBlocksWithJsonArray([
   {
     "type": "protocol",
-    "message0": "protocol %1 import %2 do %3",
+    "message0": "protocol %1 do %2",
     "args0": [
       {
         "type": "input_dummy"
-      },
-      {
-        "type": "input_statement",
-        "name": "IMPORT"
       },
       {
         "type": "input_statement",
@@ -19,43 +15,6 @@ Blockly.defineBlocksWithJsonArray([
     "colour": 230,
     "tooltip": "This defines a protocol",
     "helpUrl": "https://www.aquarium.bio/",
-  },
-  {
-    "type": "library",
-    "message0": "library %1",
-    "args0": [
-      {
-        "type": "field_dropdown",
-        "name": "LIBRARY_NAME",
-        "options": [
-          [
-            "debug",
-            "Debug"
-          ],
-          [
-            "association management",
-            "AssociationManagement"
-          ],
-          [
-            "microtiter plates",
-            "MicrotiterPlates"
-          ],
-          [
-            "pipettors",
-            "Pipettors"
-          ],
-          [
-            "labware names",
-            "LabwareNames"
-          ]
-        ]
-      }
-    ],
-    "previousStatement": null,
-    "nextStatement": null,
-    "colour": 230,
-    "tooltip": "Select a library to import",
-    "helpUrl": "https://www.aquarium.bio/"
   },
   {
     "type": "operations",
@@ -109,66 +68,60 @@ Blockly.defineBlocksWithJsonArray([
   }
 ]);
 
-  var krillToolbox = `
-  <xml id="toolbox" style="display: none">
-  <block type="protocol"/>
-  <block type="library"></block>
-  <block type="operations_retrieve"/>
-  <block type="operations_make"/>
-  <block type="operation_list"/>
-  <block type="operations"/>
-  </xml>
-  `
+var krillToolbox = `
+<xml id="toolbox" style="display: none">
+<block type="protocol"/>
+<block type="operations_retrieve"/>
+<block type="operations_make"/>
+<block type="operation_list"/>
+<block type="operations"/>
+</xml>
+`
 
-  const krillGenerator = new Blockly.Generator('Krill');
-  krillGenerator.PRECEDENCE = 0;
+const krillGenerator = new Blockly.Generator('Krill');
+krillGenerator.PRECEDENCE = 0;
 
-  krillGenerator['protocol'] = function(block) {
-    let code = '# typed: false\n# frozen_string_literal: true\n\nclass Protocol\n';
-    let imports = krillGenerator.statementToCode(block, 'IMPORT');
-    code += imports + '\n';
+krillGenerator['protocol'] = function(block) {
+  let code = ''
+  code += '# typed: false\n# frozen_string_literal: true\n\n'
+  code += 'needs \'Protocol Base/ProtocolBase\'\n\n'
+  code += 'class Protocol\n' + krillGenerator.INDENT + 'include ProtocolBase\n\n';
 
-    let main = krillGenerator.statementToCode(block, 'MAIN');
-    main = 'def main\n' + main + 'end\n';
-    let indentedMain = krillGenerator.prefixLines(main, krillGenerator.INDENT);
+  let main = krillGenerator.statementToCode(block, 'MAIN');
+  main = 'def main\n' + main + 'end\n';
+  let indentedMain = krillGenerator.prefixLines(main, krillGenerator.INDENT);
+  code += indentedMain;
 
-    code += indentedMain;
-    code += 'end';
-    return [code, krillGenerator.PRECEDENCE];
-  };
+  code += 'end\n';
+  return [code, krillGenerator.PRECEDENCE];
+};
 
-  krillGenerator['library'] = function(block) {
-    let name = block.getFieldValue('LIBRARY_NAME');
-    let code = 'include ' + name + '\n';
-    return code;
-  };
+krillGenerator['operations_retrieve'] = function(block) {
+  let operation_list = krillGenerator.valueToCode(block, 'OPERATIONS', krillGenerator.PRECEDENCE);
+  let code = operation_list + '.retrieve\n';
+  return code;
+};
 
-  krillGenerator['operations_retrieve'] = function(block) {
-    let operation_list = krillGenerator.valueToCode(block, 'OPERATIONS', krillGenerator.PRECEDENCE);
-    let code = operation_list + '.retrieve\n';
-    return code;
-  };
+krillGenerator['operations_make'] = function(block) {
+  let operation_list = krillGenerator.valueToCode(block, 'OPERATIONS', krillGenerator.PRECEDENCE);
+  let code = operation_list + '.make\n';
+  return code;
+};
 
-  krillGenerator['operations_make'] = function(block) {
-    let operation_list = krillGenerator.valueToCode(block, 'OPERATIONS', krillGenerator.PRECEDENCE);
-    let code = operation_list + '.make\n';
-    return code;
-  };
+krillGenerator['operation_list'] = function(block) {
+  let code = block.getFieldValue('OPERATION_LIST');
+  return [code, krillGenerator.PRECEDENCE];
+};
 
-  krillGenerator['operation_list'] = function(block) {
-    let code = block.getFieldValue('OPERATION_LIST');
-    return [code, krillGenerator.PRECEDENCE];
-  };
+krillGenerator['operations'] = function(block) {
+  let code = 'operations';
+  return [code, krillGenerator.PRECEDENCE];
+};
 
-  krillGenerator['operations'] = function(block) {
-    let code = 'operations';
-    return [code, krillGenerator.PRECEDENCE];
-  };
-
-  krillGenerator.scrub_ = function(block, code, opt_thisOnly) {
-    let nextBlock =
-        block.nextConnection && block.nextConnection.targetBlock();
-    let nextCode =
-        opt_thisOnly ? '' : krillGenerator.blockToCode(nextBlock);
-    return code +  nextCode;
-  };
+krillGenerator.scrub_ = function(block, code, opt_thisOnly) {
+  let nextBlock =
+      block.nextConnection && block.nextConnection.targetBlock();
+  let nextCode =
+      opt_thisOnly ? '' : krillGenerator.blockToCode(nextBlock);
+  return code +  nextCode;
+};
