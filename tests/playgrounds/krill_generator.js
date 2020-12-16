@@ -38,9 +38,9 @@ krillGenerator['protocol'] = function(block) {
   code += 'needs \'Protocol Base/ProtocolBase\'\n\n'
   code += 'class Protocol\n' + krillGenerator.INDENT + 'include ProtocolBase\n\n';
 
-  let main = krillGenerator.statementToCode(block, 'MAIN');
-  main = 'def main\n' + main + 'end\n';
-  let indentedMain = krillGenerator.prefixLines(main, krillGenerator.INDENT);
+  const main = krillGenerator.statementToCode(block, 'MAIN');
+  let fullMain = 'def main\n' + main + 'end\n';
+  let indentedMain = krillGenerator.prefixLines(fullMain, krillGenerator.INDENT);
   code += indentedMain;
 
   code += 'end\n';
@@ -104,20 +104,20 @@ Blockly.defineBlocksWithJsonArray([
 ]);
 
 krillGenerator['operations_retrieve'] = function(block) {
-  let operation_list = krillGenerator.valueToCode(block, 'OPERATIONS', krillGenerator.PRECEDENCE);
+  const operation_list = krillGenerator.valueToCode(block, 'OPERATIONS', krillGenerator.PRECEDENCE);
   let code = operation_list + '.retrieve\n';
   return code;
 };
 
 krillGenerator['operations_make'] = function(block) {
-  let operation_list = krillGenerator.valueToCode(block, 'OPERATIONS', krillGenerator.PRECEDENCE);
+  const operation_list = krillGenerator.valueToCode(block, 'OPERATIONS', krillGenerator.PRECEDENCE);
   let code = operation_list + '.make\n';
   return code;
 };
 
 krillGenerator['operation_list'] = function(block) {
-  let code = block.getFieldValue('OPERATION_LIST');
-  return [code, krillGenerator.PRECEDENCE];
+  const operation_list = block.getFieldValue('OPERATION_LIST');
+  return [operation_list, krillGenerator.PRECEDENCE];
 };
 
 krillGenerator['operations'] = function(block) {
@@ -157,16 +157,147 @@ Blockly.defineBlocksWithJsonArray([
 
 krillGenerator['for_each_operation'] = function(block) {
   // TODO: Figure out how to replace with safe variable name.
-  let variable_operation = block.getFieldValue('OPERATION');
-  let value_operation_list = krillGenerator.valueToCode(block, 'OPERATION_LIST', krillGenerator.PRECEDENCE);
-  let statements_block = krillGenerator.statementToCode(block, 'BLOCK');
+  const variable_operation = block.getFieldValue('OPERATION');
+  const value_operation_list = krillGenerator.valueToCode(block, 'OPERATION_LIST', krillGenerator.PRECEDENCE);
+  const statements_block = krillGenerator.statementToCode(block, 'BLOCK');
   let code = '\n' + value_operation_list + '.each do |' + variable_operation + '|\n';
   code += statements_block;
   code += 'end\n\n';
   return code;
 };
 
-////////// Toolbox //////////
+////////// SHOW BLOCK //////////
+Blockly.Msg.SHOW_HUE = '%{BKY_COLOUR_HUE}';
+Blockly.defineBlocksWithJsonArray([
+  {
+    "type": "show",
+    "message0": "show %1 %2 %3 %4",
+    "args0": [
+      {
+        "type": "input_dummy"
+      },
+      {
+        "type": "field_label_serializable",
+        "name": "TITLE",
+        "text": "title"
+      },
+      {
+        "type": "input_value",
+        "name": "TITLE"
+      },
+      {
+        "type": "input_statement",
+        "name": "STEPS"
+      }
+    ],
+    "inputsInline": false,
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": "%{BKY_SHOW_HUE}",
+    "tooltip": "show block",
+    "helpUrl": ""
+  },{
+    "type": "note",
+    "message0": "note %1",
+    "args0": [
+      {
+        "type": "input_value",
+        "name": "TEXT"
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": "%{BKY_SHOW_HUE}",
+    "tooltip": "Use in show block",
+    "helpUrl": "https://www.aquarium.bio/"
+  },{
+    "type": "warning",
+    "message0": "warning %1",
+    "args0": [
+      {
+        "type": "input_value",
+        "name": "TEXT"
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": "%{BKY_SHOW_HUE}",
+    "tooltip": "Use in show block",
+    "helpUrl": "https://www.aquarium.bio/"
+  },{
+    "type": "check",
+    "message0": "check %1",
+    "args0": [
+      {
+        "type": "input_value",
+        "name": "TEXT"
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": "%{BKY_SHOW_HUE}",
+    "tooltip": "Use in show block",
+    "helpUrl": "https://www.aquarium.bio/"
+  },{
+    "type": "bullet",
+    "message0": "bullet %1",
+    "args0": [
+      {
+        "type": "input_value",
+        "name": "TEXT"
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": "%{BKY_SHOW_HUE}",
+    "tooltip": "Use in show block",
+    "helpUrl": "https://www.aquarium.bio/"
+  }
+]);
+
+krillGenerator['show'] = function(block) {
+  const value_title = krillGenerator.valueToCode(block, 'TITLE', krillGenerator.PRECEDENCE);
+  const statements_steps = krillGenerator.statementToCode(block, 'STEPS');
+  let code = '\nshow do\n';
+  let lines = krillGenerator.INDENT + 'title ' + value_title + '\n\n';
+  lines += statements_steps;
+  code += lines
+  code += 'end\n\n';
+  return code;
+};
+
+krillGenerator['note'] = function(block) {
+  const text = krillGenerator.valueToCode(block, 'TEXT', krillGenerator.PRECEDENCE);
+  let code = 'note ' + text + '\n';
+  return code;
+};
+
+krillGenerator['check'] = function(block) {
+  const text = krillGenerator.valueToCode(block, 'TEXT', krillGenerator.PRECEDENCE);
+  let code = 'check ' + text + '\n';
+  return code;
+};
+
+krillGenerator['warning'] = function(block) {
+  const text = krillGenerator.valueToCode(block, 'TEXT', krillGenerator.PRECEDENCE);
+  let code = 'warning ' + text + '\n';
+  return code;
+};
+
+krillGenerator['bullet'] = function(block) {
+  const text = krillGenerator.valueToCode(block, 'TEXT', krillGenerator.PRECEDENCE);
+  let code = 'bullet ' + text + '\n';
+  return code;
+};
+
+////////// TEXT //////////
+krillGenerator['text'] = function(block) {
+  var textValue = block.getFieldValue('TEXT');
+  var code = "'" + textValue + "'";
+  return [code, krillGenerator.PRECEDENCE];
+};
+
+////////// TOOLBOX //////////
 class CustomCategory extends Blockly.ToolboxCategory {
   /**
    * Constructor for a custom category.
@@ -195,6 +326,16 @@ var krillToolbox = `
 </category>
 <category name="Loops" colour="%{BKY_LOOPS_HUE}">
 <block type="for_each_operation"/>
+</category>
+<category name="Show" colour="%{BKY_SHOW_HUE}">
+<block type="show"/>
+<block type="note"/>
+<block type="check"/>
+<block type="warning"/>
+<block type="bullet"/>
+</category>
+<category name="Text" colour="%{BKY_TEXTS_HUE}">
+<block type="text"><field name="TEXT"/></block>
 </category>
 </xml>
 `
