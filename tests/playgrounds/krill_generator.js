@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2020 University of Washington
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 const krillGenerator = new Blockly.Generator('Krill');
 krillGenerator.PRECEDENCE = 0;
 
