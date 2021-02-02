@@ -14,3 +14,4 @@ The purpose of this project is to create a prototype visual progamming language 
 ## Use
 Clone this repo and launch `tests/playgrounds/advanced_playground.html`. Krill blocks are defined in `tests/playgrounds/krill_generator.js`
 
+<img src="/tests/playgrounds/blockly_to_krill.png" alt="Blockly to Krill" width="750"/>
