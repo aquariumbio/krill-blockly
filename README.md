@@ -1,6 +1,6 @@
 # Krill Blockly
 
-A not-entirely-reasonable idea of how protocol writing Aquarium protocols should be. Based on [Google's Blockly](https://developers.google.com/blockly/). 
+A not-entirely-reasonable idea of how writing Aquarium protocols should be. Based on [Google's Blockly](https://developers.google.com/blockly/). 
 
 ## Goals
 Aquarium protocols are written in Krill, a Ruby DSL. While this allows the protocol developer to do nearly anything, the language is easily not approachable for the vast majority of potential users who know a great deal about biology protocols but nothing about programming in Ruby. 
